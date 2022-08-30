@@ -6,7 +6,7 @@ const app = express();
 var corsOptions = {
     origin: "http://localhost:3000" //cross origin
 };
-
+app.use(cors(corsOptions));
 // parse requests of content-type - application/json
 app.use(express.json()); /* bodyParser.json() is deprecated */
 
@@ -19,17 +19,11 @@ app.get("/", (req, res) => {
 });
 
 require("./app/routes/products.route")(app);
+require("./app/routes/users.route")(app);
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}.`);
-    sqlLibrary.dropTableThenInit("products");
-    //sqlLibrary.isTableEmpty();
-    sqlLibrary.fetchStoreApi();
-    // setTimeout(function () {
-    //     if (sqlLibrary.isTableEmpty() === true) {
-    //         sqlLibrary.fetchStoreApi();
-    //     };
-    // }, 2000)
-
+    sqlLibrary.dropTableThenInit("products"); //drops existing products database on server start, then recreates a new one
+    sqlLibrary.fetchStoreApi(); //fetches fakestore api and populates the sql table
 });

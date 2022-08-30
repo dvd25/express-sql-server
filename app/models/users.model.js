@@ -1,31 +1,27 @@
 const sql = require("./db.js")
 
 // constructor
-const Product = function (product) {
-    this.title = product.title;
-    this.price = product.price;
-    this.description = product.description;
-    this.image = product.image;
-    this.category = product.category;
-    this.rate = product.rate;
-    this.count = product.count
+const User = function (user) {
+    this.username = user.username;
+    this.password = user.password;
+    this.admin = user.admin;
 };
 
-Product.create = (newProduct, result) => {
-    sql.query("INSERT INTO products SET ?", newProduct, (err, res) => {
+User.create = (newUser, result) => {
+    sql.query("INSERT INTO users SET ?", newUser, (err, res) => {
         if (err) {
             console.log("error: ", err);
             result(err, null);
             return;
         }
 
-        console.log("Created user: ", { id: res.insertId, ...newProduct });
-        result(null, { id: res.insertId, ...newProduct });
+        console.log("Created user: ", { id: res.insertId, ...newUser });
+        result(null, { id: res.insertId, ...newUser });
     });
 };
 
-Product.findById = (id, result) => {
-    sql.query(`SELECT * FROM products WHERE id = ?`,id, (err, res) => {
+User.findById = (id, result) => {
+    sql.query(`SELECT * FROM users WHERE id = ?`,id, (err, res) => {
         if (err) {
             console.log("error: ", err);
             result(err, null);
@@ -42,8 +38,8 @@ Product.findById = (id, result) => {
     });
 };
 
-Product.getAll = (result) => {
-    sql.query(`SELECT * FROM products`, (err, res) => {
+User.getAll = (result) => {
+    sql.query(`SELECT * FROM users`, (err, res) => {
         if (err) {
             console.log("error: ", err);
             result(err, null);
@@ -60,10 +56,10 @@ Product.getAll = (result) => {
 
 
 
-Product.updateById = (id, product, result) => {
+User.updateById = (id, user, result) => {
     sql.query(
-        "UPDATE products SET title = ?, price = ?, description = ?, image = ?, category = ?, rate=?, count=? WHERE id = ?",
-        [product.title, product.price, product.description, product.image, product.category, product.rate, product.count,id],
+        "UPDATE users SET username = ?, password = ? WHERE id = ?",
+        [user.username, user.password, id],
         (err, res) => {
             if (err) {
                 console.log("error: ", err);
@@ -77,14 +73,14 @@ Product.updateById = (id, product, result) => {
                 return;
             }
 
-            console.log("updated user: ", { id: id, ...product });
-            result(null, { id: id, ...product });
+            console.log("updated user: ", { id: id, ...user });
+            result(null, { id: id, ...user });
         }
     );
 };
 
-Product.deleteById = (id, result) => {
-    sql.query(`DELETE FROM products WHERE id = ${id}`, (err, res) => {
+User.deleteById = (id, result) => {
+    sql.query(`DELETE FROM users WHERE id = ${id}`, (err, res) => {
         if (err) {
             console.log("error: ", err);
             result(null, err);
@@ -102,18 +98,18 @@ Product.deleteById = (id, result) => {
 }
 
 
-Product.truncateProducts = (result) => {
-    sql.query(`TRUNCATE TABLE products`, (err, res) => {
+User.truncateUsers = (result) => {
+    sql.query(`TRUNCATE TABLE users`, (err, res) => {
         if (err) {
             console.log("error: ", err);
             result(null, err);
             return;
         }
-        if (res.affectedRows == 0) {
-            // Nothing was deleted should mean there was no entries in the table to delete
-            result({ kind: "not_found" }, null);
-            return;
-        }
+        // if (res.affectedRows == 0) {
+        //     // Nothing was deleted should mean there was no entries in the table to delete
+        //     result({ kind: "not_found" }, null);
+        //     return;
+        // }
         console.log("Deleted all users sucessfully ");
         result(null, null);
     }
@@ -121,22 +117,27 @@ Product.truncateProducts = (result) => {
 }
 
 
-Product.getByCategory = (category, result) => {
-    sql.query(`SELECT * FROM products WHERE category = ?`,category, (err, res) => {
+User.findByName = (req, result) => {
+    sql.query(`SELECT * FROM users WHERE username = ?`,req.body.username, (err, res) => {
         if (err) {
             console.log("error: ", err);
             result(err, null);
             return;
         }
         if (res.length) {
-            console.log("Found product: ", res[0]);
-            result(err, res);
+            console.log("Found users: ", res.length);
+            console.log("password", res[0].password)
+            if (req.body.password === res[0].password){
+                result(err, {isAuthenticated: true, message: "Successfully signed in"});
+            } else {
+                return result({ kind: "not_found" }, {isAuthenticated: false, message: "Incorrect username and/or password"});
+            }
             return;
-        }
+        } 
         result({ kind: "not_found" }, null);
     });
 };
 
 
 
-module.exports = Product;
+module.exports = User;

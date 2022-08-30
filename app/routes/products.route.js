@@ -20,10 +20,7 @@ module.exports = app => {
     // Delete a product with id
     router.delete("/:id", products.delete);
   
-    // Delete all products
-    router.delete("/", products.deleteAll);
-
-    // Drop table
+    // Truncates all products 
     router.delete("/", products.deleteAll);
 
     app.use('/api/products', router);
